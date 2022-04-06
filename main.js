@@ -5196,6 +5196,7 @@ var $author$project$GameState$Coordinate = F2(
 var $author$project$GameState$Letter = function (a) {
 	return {$: 'Letter', a: a};
 };
+var $author$project$GameState$Rock = {$: 'Rock'};
 var $author$project$GameState$Entity = F4(
 	function (ix, eType, location, deleted) {
 		return {deleted: deleted, eType: eType, ix: ix, location: location};
@@ -5257,7 +5258,10 @@ var $author$project$GameState$testEntities = $author$project$GameState$makeEntit
 			_Utils_Tuple2(
 			$author$project$GameState$Letter(
 				_Utils_chr('B')),
-			A2($author$project$GameState$Coordinate, 0, 1))
+			A2($author$project$GameState$Coordinate, 0, 1)),
+			_Utils_Tuple2(
+			$author$project$GameState$Rock,
+			A2($author$project$GameState$Coordinate, 3, 3))
 		]));
 var $author$project$GameState$Grid = F2(
 	function (rows, columns) {
@@ -6012,552 +6016,6 @@ var $author$project$GameState$Down = {$: 'Down'};
 var $author$project$GameState$Left = {$: 'Left'};
 var $author$project$GameState$Right = {$: 'Right'};
 var $author$project$GameState$Up = {$: 'Up'};
-var $author$project$GameState$TurnProgress = F3(
-	function (hasMoved, canMove, toMoveHint) {
-		return {canMove: canMove, hasMoved: hasMoved, toMoveHint: toMoveHint};
-	});
-var $elm$core$Set$Set_elm_builtin = function (a) {
-	return {$: 'Set_elm_builtin', a: a};
-};
-var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
-var $elm$core$Array$filter = F2(
-	function (isGood, array) {
-		return $elm$core$Array$fromList(
-			A3(
-				$elm$core$Array$foldr,
-				F2(
-					function (x, xs) {
-						return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-					}),
-				_List_Nil,
-				array));
-	});
-var $elm$core$Set$insert = F2(
-	function (key, _v0) {
-		var dict = _v0.a;
-		return $elm$core$Set$Set_elm_builtin(
-			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
-	});
-var $elm$core$Set$fromList = function (list) {
-	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
-};
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $elm$core$Dict$getMin = function (dict) {
-	getMin:
-	while (true) {
-		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-			var left = dict.d;
-			var $temp$dict = left;
-			dict = $temp$dict;
-			continue getMin;
-		} else {
-			return dict;
-		}
-	}
-};
-var $elm$core$Dict$moveRedLeft = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var lLeft = _v1.d;
-			var lRight = _v1.e;
-			var _v2 = dict.e;
-			var rClr = _v2.a;
-			var rK = _v2.b;
-			var rV = _v2.c;
-			var rLeft = _v2.d;
-			var _v3 = rLeft.a;
-			var rlK = rLeft.b;
-			var rlV = rLeft.c;
-			var rlL = rLeft.d;
-			var rlR = rLeft.e;
-			var rRight = _v2.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				rlK,
-				rlV,
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					rlL),
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v4 = dict.d;
-			var lClr = _v4.a;
-			var lK = _v4.b;
-			var lV = _v4.c;
-			var lLeft = _v4.d;
-			var lRight = _v4.e;
-			var _v5 = dict.e;
-			var rClr = _v5.a;
-			var rK = _v5.b;
-			var rV = _v5.c;
-			var rLeft = _v5.d;
-			var rRight = _v5.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$moveRedRight = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var _v2 = _v1.d;
-			var _v3 = _v2.a;
-			var llK = _v2.b;
-			var llV = _v2.c;
-			var llLeft = _v2.d;
-			var llRight = _v2.e;
-			var lRight = _v1.e;
-			var _v4 = dict.e;
-			var rClr = _v4.a;
-			var rK = _v4.b;
-			var rV = _v4.c;
-			var rLeft = _v4.d;
-			var rRight = _v4.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				lK,
-				lV,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					lRight,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v5 = dict.d;
-			var lClr = _v5.a;
-			var lK = _v5.b;
-			var lV = _v5.c;
-			var lLeft = _v5.d;
-			var lRight = _v5.e;
-			var _v6 = dict.e;
-			var rClr = _v6.a;
-			var rK = _v6.b;
-			var rV = _v6.c;
-			var rLeft = _v6.d;
-			var rRight = _v6.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$removeHelpPrepEQGT = F7(
-	function (targetKey, dict, color, key, value, left, right) {
-		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-			var _v1 = left.a;
-			var lK = left.b;
-			var lV = left.c;
-			var lLeft = left.d;
-			var lRight = left.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				lK,
-				lV,
-				lLeft,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
-		} else {
-			_v2$2:
-			while (true) {
-				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
-					if (right.d.$ === 'RBNode_elm_builtin') {
-						if (right.d.a.$ === 'Black') {
-							var _v3 = right.a;
-							var _v4 = right.d;
-							var _v5 = _v4.a;
-							return $elm$core$Dict$moveRedRight(dict);
-						} else {
-							break _v2$2;
-						}
-					} else {
-						var _v6 = right.a;
-						var _v7 = right.d;
-						return $elm$core$Dict$moveRedRight(dict);
-					}
-				} else {
-					break _v2$2;
-				}
-			}
-			return dict;
-		}
-	});
-var $elm$core$Dict$removeMin = function (dict) {
-	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-		var color = dict.a;
-		var key = dict.b;
-		var value = dict.c;
-		var left = dict.d;
-		var lColor = left.a;
-		var lLeft = left.d;
-		var right = dict.e;
-		if (lColor.$ === 'Black') {
-			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-				var _v3 = lLeft.a;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					key,
-					value,
-					$elm$core$Dict$removeMin(left),
-					right);
-			} else {
-				var _v4 = $elm$core$Dict$moveRedLeft(dict);
-				if (_v4.$ === 'RBNode_elm_builtin') {
-					var nColor = _v4.a;
-					var nKey = _v4.b;
-					var nValue = _v4.c;
-					var nLeft = _v4.d;
-					var nRight = _v4.e;
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						$elm$core$Dict$removeMin(nLeft),
-						nRight);
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			}
-		} else {
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				value,
-				$elm$core$Dict$removeMin(left),
-				right);
-		}
-	} else {
-		return $elm$core$Dict$RBEmpty_elm_builtin;
-	}
-};
-var $elm$core$Dict$removeHelp = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_cmp(targetKey, key) < 0) {
-				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
-					var _v4 = left.a;
-					var lLeft = left.d;
-					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-						var _v6 = lLeft.a;
-						return A5(
-							$elm$core$Dict$RBNode_elm_builtin,
-							color,
-							key,
-							value,
-							A2($elm$core$Dict$removeHelp, targetKey, left),
-							right);
-					} else {
-						var _v7 = $elm$core$Dict$moveRedLeft(dict);
-						if (_v7.$ === 'RBNode_elm_builtin') {
-							var nColor = _v7.a;
-							var nKey = _v7.b;
-							var nValue = _v7.c;
-							var nLeft = _v7.d;
-							var nRight = _v7.e;
-							return A5(
-								$elm$core$Dict$balance,
-								nColor,
-								nKey,
-								nValue,
-								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
-								nRight);
-						} else {
-							return $elm$core$Dict$RBEmpty_elm_builtin;
-						}
-					}
-				} else {
-					return A5(
-						$elm$core$Dict$RBNode_elm_builtin,
-						color,
-						key,
-						value,
-						A2($elm$core$Dict$removeHelp, targetKey, left),
-						right);
-				}
-			} else {
-				return A2(
-					$elm$core$Dict$removeHelpEQGT,
-					targetKey,
-					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
-			}
-		}
-	});
-var $elm$core$Dict$removeHelpEQGT = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBNode_elm_builtin') {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_eq(targetKey, key)) {
-				var _v1 = $elm$core$Dict$getMin(right);
-				if (_v1.$ === 'RBNode_elm_builtin') {
-					var minKey = _v1.b;
-					var minValue = _v1.c;
-					return A5(
-						$elm$core$Dict$balance,
-						color,
-						minKey,
-						minValue,
-						left,
-						$elm$core$Dict$removeMin(right));
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			} else {
-				return A5(
-					$elm$core$Dict$balance,
-					color,
-					key,
-					value,
-					left,
-					A2($elm$core$Dict$removeHelp, targetKey, right));
-			}
-		} else {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		}
-	});
-var $elm$core$Dict$remove = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
-var $elm$core$Dict$diff = F2(
-	function (t1, t2) {
-		return A3(
-			$elm$core$Dict$foldl,
-			F3(
-				function (k, v, t) {
-					return A2($elm$core$Dict$remove, k, t);
-				}),
-			t1,
-			t2);
-	});
-var $elm$core$Set$diff = F2(
-	function (_v0, _v1) {
-		var dict1 = _v0.a;
-		var dict2 = _v1.a;
-		return $elm$core$Set$Set_elm_builtin(
-			A2($elm$core$Dict$diff, dict1, dict2));
-	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$GameState$entityAtLocation = F2(
-	function (entities, location) {
-		return $elm$core$List$head(
-			$elm$core$Array$toList(
-				A2(
-					$elm$core$Array$filter,
-					function (e) {
-						return _Utils_eq(e.location, location);
-					},
-					entities)));
-	});
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
-var $elm$core$Basics$ge = _Utils_ge;
-var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var $elm$core$Array$getHelp = F3(
-	function (shift, index, tree) {
-		getHelp:
-		while (true) {
-			var pos = $elm$core$Array$bitMask & (index >>> shift);
-			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_v0.$ === 'SubTree') {
-				var subTree = _v0.a;
-				var $temp$shift = shift - $elm$core$Array$shiftStep,
-					$temp$index = index,
-					$temp$tree = subTree;
-				shift = $temp$shift;
-				index = $temp$index;
-				tree = $temp$tree;
-				continue getHelp;
-			} else {
-				var values = _v0.a;
-				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
-			}
-		}
-	});
-var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var $elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
-};
-var $elm$core$Array$get = F2(
-	function (index, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
-			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
-			A3($elm$core$Array$getHelp, startShift, index, tree)));
-	});
-var $elm$core$Dict$isEmpty = function (dict) {
-	if (dict.$ === 'RBEmpty_elm_builtin') {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $elm$core$Set$isEmpty = function (_v0) {
-	var dict = _v0.a;
-	return $elm$core$Dict$isEmpty(dict);
-};
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var $elm$core$Dict$member = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$get, key, dict);
-		if (_v0.$ === 'Just') {
-			return true;
-		} else {
-			return false;
-		}
-	});
-var $elm$core$Set$member = F2(
-	function (key, _v0) {
-		var dict = _v0.a;
-		return A2($elm$core$Dict$member, key, dict);
-	});
 var $author$project$GameState$moveCoord = F2(
 	function (direction, coord) {
 		switch (direction.$) {
@@ -6579,7 +6037,192 @@ var $author$project$GameState$moveCoord = F2(
 					{column: coord.column + 1});
 		}
 	});
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$core$Array$filter = F2(
+	function (isGood, array) {
+		return $elm$core$Array$fromList(
+			A3(
+				$elm$core$Array$foldr,
+				F2(
+					function (x, xs) {
+						return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+					}),
+				_List_Nil,
+				array));
+	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$GameState$entityAtLocation = F2(
+	function (entities, location) {
+		return $elm$core$List$head(
+			$elm$core$Array$toList(
+				A2(
+					$elm$core$Array$filter,
+					function (e) {
+						return _Utils_eq(e.location, location);
+					},
+					entities)));
+	});
+var $elm$core$Basics$ge = _Utils_ge;
+var $author$project$GameState$inBounds = F2(
+	function (grid, location) {
+		return (location.row >= 0) && ((location.column >= 0) && ((_Utils_cmp(location.row, grid.rows) < 0) && (_Utils_cmp(location.column, grid.columns) < 0)));
+	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $elm$core$Basics$not = _Basics_not;
+var $author$project$GameState$moveValid = F3(
+	function (state, entityIx, direction) {
+		var entityBlocks = function (eType) {
+			switch (eType.$) {
+				case 'Rock':
+					return true;
+				case 'Letter':
+					return true;
+				default:
+					return false;
+			}
+		};
+		var entity = $elm$core$List$head(
+			$elm$core$Array$toList(
+				A2(
+					$elm$core$Array$filter,
+					function (e) {
+						return _Utils_eq(e.ix, entityIx);
+					},
+					state.entities)));
+		var entityExists = function () {
+			if (entity.$ === 'Just') {
+				var e = entity.a;
+				return !e.deleted;
+			} else {
+				return false;
+			}
+		}();
+		var entityLoc = A2(
+			$elm$core$Maybe$map,
+			function ($) {
+				return $.location;
+			},
+			entity);
+		var targetLoc = A2(
+			$elm$core$Maybe$map,
+			$author$project$GameState$moveCoord(direction),
+			entityLoc);
+		var inGrid = function () {
+			if (targetLoc.$ === 'Just') {
+				var l = targetLoc.a;
+				return A2($author$project$GameState$inBounds, state.grid, l);
+			} else {
+				return false;
+			}
+		}();
+		var targetEntity = A2(
+			$elm$core$Maybe$andThen,
+			$author$project$GameState$entityAtLocation(state.entities),
+			targetLoc);
+		var targetBlocks = function () {
+			if (targetEntity.$ === 'Just') {
+				var t = targetEntity.a;
+				return entityBlocks(t.eType);
+			} else {
+				return false;
+			}
+		}();
+		return entityExists && ((!targetBlocks) && inGrid);
+	});
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $author$project$GameState$scanLetters = F2(
+	function (state, direction) {
+		var scan = F2(
+			function (scanner, range) {
+				return A2($elm$core$List$map, scanner, range);
+			});
+		var rowIxs = A2($elm$core$List$range, 0, state.grid.rows - 1);
+		var isLetter = function (entity) {
+			var _v1 = entity.eType;
+			if (_v1.$ === 'Letter') {
+				return true;
+			} else {
+				return false;
+			}
+		};
+		var scanCol = function (colIx) {
+			return $elm$core$Array$toList(
+				A2(
+					$elm$core$Array$filter,
+					function (e) {
+						return isLetter(e) && _Utils_eq(e.location.column, colIx);
+					},
+					state.entities));
+		};
+		var scanRow = function (rowIx) {
+			return $elm$core$Array$toList(
+				A2(
+					$elm$core$Array$filter,
+					function (e) {
+						return isLetter(e) && _Utils_eq(e.location.row, rowIx);
+					},
+					state.entities));
+		};
+		var colIxs = A2($elm$core$List$range, 0, state.grid.columns - 1);
+		var scanned = function () {
+			switch (direction.$) {
+				case 'Up':
+					return A2(scan, scanRow, rowIxs);
+				case 'Down':
+					return A2(
+						scan,
+						scanRow,
+						$elm$core$List$reverse(rowIxs));
+				case 'Left':
+					return A2(scan, scanCol, colIxs);
+				default:
+					return A2(
+						scan,
+						scanCol,
+						$elm$core$List$reverse(colIxs));
+			}
+		}();
+		return $elm$core$List$concat(scanned);
+	});
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
 var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
 var $elm$core$Array$setHelp = F4(
 	function (shift, index, value, tree) {
@@ -6603,6 +6246,10 @@ var $elm$core$Array$setHelp = F4(
 				tree);
 		}
 	});
+var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
 var $elm$core$Array$set = F3(
 	function (index, value, array) {
 		var len = array.a;
@@ -6623,172 +6270,26 @@ var $elm$core$Array$set = F3(
 			A4($elm$core$Array$setHelp, startShift, index, value, tree),
 			tail));
 	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$GameState$hMoveLetters = F3(
-	function (entities, direction, progress) {
-		hMoveLetters:
-		while (true) {
-			var remaining = A2($elm$core$Set$diff, progress.canMove, progress.hasMoved);
-			if ($elm$core$Set$isEmpty(remaining)) {
-				return _Utils_Tuple2(progress, entities);
-			} else {
-				var toMoveIndex = function () {
-					var _v4 = progress.toMoveHint;
-					if (_v4.$ === 'Just') {
-						var ix = _v4.a;
-						return $elm$core$Maybe$Just(ix);
-					} else {
-						return $elm$core$List$head(
-							$elm$core$Set$toList(remaining));
-					}
-				}();
-				var toMoveEntity = A2(
-					$elm$core$Maybe$andThen,
-					function (ix) {
-						return A2($elm$core$Array$get, ix, entities);
-					},
-					toMoveIndex);
-				var targetLocation = A2(
-					$elm$core$Maybe$map,
-					$author$project$GameState$moveCoord(direction),
-					A2(
-						$elm$core$Maybe$map,
-						function ($) {
-							return $.location;
-						},
-						toMoveEntity));
-				var targetEntity = A2(
-					$elm$core$Maybe$andThen,
-					$author$project$GameState$entityAtLocation(entities),
-					targetLocation);
-				var targetIndex = A2(
-					$elm$core$Maybe$map,
-					function ($) {
-						return $.ix;
-					},
-					targetEntity);
-				var targetShouldMove = function () {
-					if (targetIndex.$ === 'Just') {
-						var ix = targetIndex.a;
-						return A2($elm$core$Set$member, ix, progress.canMove) && (!A2($elm$core$Set$member, ix, progress.hasMoved));
-					} else {
-						return false;
-					}
-				}();
-				var toMoveHint_ = targetShouldMove ? targetIndex : $elm$core$Maybe$Nothing;
-				var hasMoved_ = function () {
-					if (targetShouldMove) {
-						return progress.hasMoved;
-					} else {
-						if (toMoveIndex.$ === 'Just') {
-							var ix = toMoveIndex.a;
-							return A2($elm$core$Set$insert, ix, progress.hasMoved);
-						} else {
-							return progress.hasMoved;
-						}
-					}
-				}();
-				var progress_ = _Utils_update(
-					progress,
-					{hasMoved: hasMoved_, toMoveHint: toMoveHint_});
-				var entity_ = function () {
-					if (targetShouldMove) {
-						return toMoveEntity;
-					} else {
-						if (toMoveEntity.$ === 'Just') {
-							var entity = toMoveEntity.a;
-							return $elm$core$Maybe$Just(
-								_Utils_update(
-									entity,
-									{
-										location: A2($elm$core$Maybe$withDefault, entity.location, targetLocation)
-									}));
-						} else {
-							return $elm$core$Maybe$Nothing;
-						}
-					}
-				}();
-				var entities_ = function () {
-					if (entity_.$ === 'Just') {
-						var e_ = entity_.a;
-						return A3($elm$core$Array$set, e_.ix, e_, entities);
-					} else {
-						return entities;
-					}
-				}();
-				var $temp$entities = entities_,
-					$temp$direction = direction,
-					$temp$progress = progress_;
-				entities = $temp$entities;
-				direction = $temp$direction;
-				progress = $temp$progress;
-				continue hMoveLetters;
-			}
-		}
-	});
-var $elm$core$Elm$JsArray$map = _JsArray_map;
-var $elm$core$Array$map = F2(
-	function (func, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		var helper = function (node) {
-			if (node.$ === 'SubTree') {
-				var subTree = node.a;
-				return $elm$core$Array$SubTree(
-					A2($elm$core$Elm$JsArray$map, helper, subTree));
-			} else {
-				var values = node.a;
-				return $elm$core$Array$Leaf(
-					A2($elm$core$Elm$JsArray$map, func, values));
-			}
-		};
-		return A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A2($elm$core$Elm$JsArray$map, helper, tree),
-			A2($elm$core$Elm$JsArray$map, func, tail));
-	});
-var $author$project$GameState$moveLetters = F2(
-	function (entities, direction) {
-		var isLetter = function (entity) {
-			var _v1 = entity.eType;
-			if (_v1.$ === 'Letter') {
-				return true;
-			} else {
-				return false;
-			}
-		};
-		var canMove = $elm$core$Set$fromList(
-			$elm$core$Array$toList(
-				A2(
-					$elm$core$Array$map,
-					function ($) {
-						return $.ix;
-					},
-					A2($elm$core$Array$filter, isLetter, entities))));
-		var initProgress = A3($author$project$GameState$TurnProgress, $elm$core$Set$empty, canMove, $elm$core$Maybe$Nothing);
-		var _v0 = A3($author$project$GameState$hMoveLetters, entities, direction, initProgress);
-		var entities_ = _v0.b;
-		return entities_;
-	});
 var $author$project$GameState$update = F2(
 	function (state, direction) {
-		return _Utils_update(
-			state,
-			{
-				entities: A2($author$project$GameState$moveLetters, state.entities, direction)
+		var moveLetter = F2(
+			function (letter, gs) {
+				return A3($author$project$GameState$moveValid, gs, letter.ix, direction) ? _Utils_update(
+					letter,
+					{
+						location: A2($author$project$GameState$moveCoord, direction, letter.location)
+					}) : letter;
 			});
+		var updateMove = F2(
+			function (letter, gs) {
+				var letter_ = A2(moveLetter, letter, gs);
+				var entities_ = A3($elm$core$Array$set, letter.ix, letter_, gs.entities);
+				return _Utils_update(
+					gs,
+					{entities: entities_});
+			});
+		var letters = A2($author$project$GameState$scanLetters, state, direction);
+		return A3($elm$core$List$foldl, updateMove, state, letters);
 	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
@@ -6798,13 +6299,13 @@ var $author$project$Main$update = F2(
 				var direction = function () {
 					var _v2 = event.keyCode;
 					switch (_v2.$) {
-						case 'Down':
+						case 'S':
 							return $elm$core$Maybe$Just($author$project$GameState$Down);
-						case 'Up':
+						case 'W':
 							return $elm$core$Maybe$Just($author$project$GameState$Up);
-						case 'Left':
+						case 'A':
 							return $elm$core$Maybe$Just($author$project$GameState$Left);
-						case 'Right':
+						case 'D':
 							return $elm$core$Maybe$Just($author$project$GameState$Right);
 						default:
 							return $elm$core$Maybe$Nothing;
@@ -6964,6 +6465,10 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$core$Set$Set_elm_builtin = function (a) {
+	return {$: 'Set_elm_builtin', a: a};
+};
+var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
 var $mdgriffith$elm_ui$Internal$Model$lengthClassName = function (x) {
 	switch (x.$) {
 		case 'Px':
@@ -7022,6 +6527,15 @@ var $mdgriffith$elm_ui$Internal$Model$transformClass = function (transform) {
 				'tfrm-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(tx) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(ty) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(tz) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(sx) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(sy) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(sz) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(ox) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(oy) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(oz) + ('-' + $mdgriffith$elm_ui$Internal$Model$floatClass(angle))))))))))))))))))));
 	}
 };
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $mdgriffith$elm_ui$Internal$Model$getStyleName = function (style) {
 	switch (style.$) {
 		case 'Shadows':
@@ -7113,6 +6627,57 @@ var $mdgriffith$elm_ui$Internal$Model$getStyleName = function (style) {
 				$mdgriffith$elm_ui$Internal$Model$transformClass(x));
 	}
 };
+var $elm$core$Set$insert = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $elm$core$Set$member = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return A2($elm$core$Dict$member, key, dict);
+	});
 var $mdgriffith$elm_ui$Internal$Model$reduceStyles = F2(
 	function (style, nevermind) {
 		var cache = nevermind.a;
@@ -7335,17 +6900,6 @@ var $mdgriffith$elm_ui$Internal$Style$CenterY = {$: 'CenterY'};
 var $mdgriffith$elm_ui$Internal$Style$Top = {$: 'Top'};
 var $mdgriffith$elm_ui$Internal$Style$alignments = _List_fromArray(
 	[$mdgriffith$elm_ui$Internal$Style$Top, $mdgriffith$elm_ui$Internal$Style$Bottom, $mdgriffith$elm_ui$Internal$Style$Right, $mdgriffith$elm_ui$Internal$Style$Left, $mdgriffith$elm_ui$Internal$Style$CenterX, $mdgriffith$elm_ui$Internal$Style$CenterY]);
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
 var $elm$core$List$concatMap = F2(
 	function (f, list) {
 		return $elm$core$List$concat(
@@ -12393,6 +11947,64 @@ var $mdgriffith$elm_ui$Element$row = F2(
 						attrs))),
 			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
+			} else {
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
+			}
+		}
+	});
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
+	});
+var $elm$core$Elm$JsArray$map = _JsArray_map;
+var $elm$core$Array$map = F2(
+	function (func, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var helper = function (node) {
+			if (node.$ === 'SubTree') {
+				var subTree = node.a;
+				return $elm$core$Array$SubTree(
+					A2($elm$core$Elm$JsArray$map, helper, subTree));
+			} else {
+				var values = node.a;
+				return $elm$core$Array$Leaf(
+					A2($elm$core$Elm$JsArray$map, func, values));
+			}
+		};
+		return A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A2($elm$core$Elm$JsArray$map, helper, tree),
+			A2($elm$core$Elm$JsArray$map, func, tail));
+	});
 var $elm$core$Array$repeat = F2(
 	function (n, e) {
 		return A2(
@@ -12415,11 +12027,14 @@ var $author$project$GameState$showGameState = function (state) {
 			var oldRow = A2($elm$core$Array$get, entity.location.row, rows);
 			var eChar = function () {
 				var _v2 = entity.eType;
-				if (_v2.$ === 'Letter') {
-					var ch = _v2.a;
-					return ch;
-				} else {
-					return _Utils_chr(' ');
+				switch (_v2.$) {
+					case 'Letter':
+						var ch = _v2.a;
+						return ch;
+					case 'Rock':
+						return _Utils_chr('%');
+					default:
+						return _Utils_chr(' ');
 				}
 			}();
 			var newRow = function () {
