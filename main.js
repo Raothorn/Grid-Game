@@ -11933,6 +11933,57 @@ var $author$project$GameView$gridTile = F2(
 					[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY]),
 				contents));
 	});
+var $elm$html$Html$Attributes$alt = $elm$html$Html$Attributes$stringProperty('alt');
+var $elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var $mdgriffith$elm_ui$Element$image = F2(
+	function (attrs, _v0) {
+		var src = _v0.src;
+		var description = _v0.description;
+		var imageAttributes = A2(
+			$elm$core$List$filter,
+			function (a) {
+				switch (a.$) {
+					case 'Width':
+						return true;
+					case 'Height':
+						return true;
+					default:
+						return false;
+				}
+			},
+			attrs);
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asEl,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.imageContainer),
+				attrs),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
+				_List_fromArray(
+					[
+						A4(
+						$mdgriffith$elm_ui$Internal$Model$element,
+						$mdgriffith$elm_ui$Internal$Model$asEl,
+						$mdgriffith$elm_ui$Internal$Model$NodeName('img'),
+						_Utils_ap(
+							_List_fromArray(
+								[
+									$mdgriffith$elm_ui$Internal$Model$Attr(
+									$elm$html$Html$Attributes$src(src)),
+									$mdgriffith$elm_ui$Internal$Model$Attr(
+									$elm$html$Html$Attributes$alt(description))
+								]),
+							imageAttributes),
+						$mdgriffith$elm_ui$Internal$Model$Unkeyed(_List_Nil))
+					])));
+	});
 var $mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
 var $mdgriffith$elm_ui$Internal$Model$asRow = $mdgriffith$elm_ui$Internal$Model$AsRow;
 var $mdgriffith$elm_ui$Element$row = F2(
@@ -12071,12 +12122,31 @@ var $mdgriffith$elm_ui$Element$text = function (content) {
 	return $mdgriffith$elm_ui$Internal$Model$Text(content);
 };
 var $author$project$GameView$gameview = function (state) {
+	var rockUrl = 'https://www.seekpng.com/png/full/396-3967087_rock-goron-mask-pixel-art.png';
+	var imgAttr = _List_fromArray(
+		[
+			$mdgriffith$elm_ui$Element$width(
+			$mdgriffith$elm_ui$Element$px(40)),
+			$mdgriffith$elm_ui$Element$height(
+			$mdgriffith$elm_ui$Element$px(40))
+		]);
 	var getEdges = function (coord) {
 		var top = !coord.row;
 		var right = _Utils_eq(coord.column, state.grid.rows - 1);
 		var left = !coord.column;
 		var bottom = _Utils_eq(coord.row, state.grid.rows - 1);
 		return {bottom: bottom, left: left, right: right, top: top};
+	};
+	var charToElement = function (ch) {
+		if ('%' === ch.valueOf()) {
+			return A2(
+				$mdgriffith$elm_ui$Element$image,
+				imgAttr,
+				{description: 'rock', src: rockUrl});
+		} else {
+			return $mdgriffith$elm_ui$Element$text(
+				$elm$core$String$fromChar(ch));
+		}
 	};
 	var gridRow = F2(
 		function (rowIx, row) {
@@ -12091,8 +12161,7 @@ var $author$project$GameView$gameview = function (state) {
 								$author$project$GameView$gridTile,
 								getEdges(
 									A2($author$project$GameState$Coordinate, rowIx, colIx)),
-								$mdgriffith$elm_ui$Element$text(
-									$elm$core$String$fromChar(ch)));
+								charToElement(ch));
 						}),
 					row));
 		});
@@ -12503,13 +12572,6 @@ var $author$project$Main$view = function (model) {
 							_List_fromArray(
 								[
 									$mdgriffith$elm_ui$Element$text('WASD or arrow keys to move')
-								])),
-							A2(
-							$mdgriffith$elm_ui$Element$paragraph,
-							_List_Nil,
-							_List_fromArray(
-								[
-									$mdgriffith$elm_ui$Element$text('% = Rock')
 								]))
 						])),
 					A2(
