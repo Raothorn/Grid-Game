@@ -6167,10 +6167,6 @@ var $elm$core$List$concat = function (lists) {
 };
 var $author$project$GameState$scanLetters = F2(
 	function (state, direction) {
-		var scan = F2(
-			function (scanner, range) {
-				return A2($elm$core$List$map, scanner, range);
-			});
 		var rowIxs = A2($elm$core$List$range, 0, state.grid.rows - 1);
 		var isLetter = function (entity) {
 			var _v1 = entity.eType;
@@ -6202,17 +6198,17 @@ var $author$project$GameState$scanLetters = F2(
 		var scanned = function () {
 			switch (direction.$) {
 				case 'Up':
-					return A2(scan, scanRow, rowIxs);
+					return A2($elm$core$List$map, scanRow, rowIxs);
 				case 'Down':
 					return A2(
-						scan,
+						$elm$core$List$map,
 						scanRow,
 						$elm$core$List$reverse(rowIxs));
 				case 'Left':
-					return A2(scan, scanCol, colIxs);
+					return A2($elm$core$List$map, scanCol, colIxs);
 				default:
 					return A2(
-						scan,
+						$elm$core$List$map,
 						scanCol,
 						$elm$core$List$reverse(colIxs));
 			}
@@ -6306,6 +6302,14 @@ var $author$project$Main$update = F2(
 						case 'A':
 							return $elm$core$Maybe$Just($author$project$GameState$Left);
 						case 'D':
+							return $elm$core$Maybe$Just($author$project$GameState$Right);
+						case 'Down':
+							return $elm$core$Maybe$Just($author$project$GameState$Down);
+						case 'Up':
+							return $elm$core$Maybe$Just($author$project$GameState$Up);
+						case 'Left':
+							return $elm$core$Maybe$Just($author$project$GameState$Left);
+						case 'Right':
 							return $elm$core$Maybe$Just($author$project$GameState$Right);
 						default:
 							return $elm$core$Maybe$Nothing;
@@ -12378,8 +12382,16 @@ var $author$project$Main$view = function (model) {
 	var edges = {bottom: false, left: true, right: false, top: true};
 	return A2(
 		$mdgriffith$elm_ui$Element$layout,
-		_List_Nil,
-		$author$project$GameView$gameview(model));
+		_List_fromArray(
+			[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY]),
+		A2(
+			$mdgriffith$elm_ui$Element$column,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$text('WASD or arrow keys to move.'),
+					$author$project$GameView$gameview(model)
+				])));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{
