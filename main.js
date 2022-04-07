@@ -5239,19 +5239,23 @@ var $author$project$GameState$GameState = F2(
 	function (grid, entities) {
 		return {entities: entities, grid: grid};
 	});
-var $author$project$GameState$Waiting = {$: 'Waiting'};
+var $author$project$GameState$Waiting = function (a) {
+	return {$: 'Waiting', a: a};
+};
 var $author$project$GameState$Belt = function (a) {
 	return {$: 'Belt', a: a};
 };
+var $author$project$GameState$Candy = {$: 'Candy'};
 var $author$project$GameState$Coordinate = F2(
 	function (row, column) {
 		return {column: column, row: row};
 	});
+var $author$project$GameState$Left = {$: 'Left'};
 var $author$project$GameState$Letter = function (a) {
 	return {$: 'Letter', a: a};
 };
-var $author$project$GameState$Right = {$: 'Right'};
 var $author$project$GameState$Rock = {$: 'Rock'};
+var $author$project$GameState$Up = {$: 'Up'};
 var $author$project$GameState$Entity = F4(
 	function (ix, eType, location, deleted) {
 		return {deleted: deleted, eType: eType, ix: ix, location: location};
@@ -5308,18 +5312,42 @@ var $author$project$GameState$testEntities = $author$project$GameState$makeEntit
 		[
 			_Utils_Tuple2(
 			$author$project$GameState$Letter(
-				_Utils_chr('A')),
-			A2($author$project$GameState$Coordinate, 0, 0)),
+				_Utils_chr('Q')),
+			A2($author$project$GameState$Coordinate, 1, 1)),
 			_Utils_Tuple2(
 			$author$project$GameState$Letter(
-				_Utils_chr('B')),
-			A2($author$project$GameState$Coordinate, 0, 1)),
+				_Utils_chr('U')),
+			A2($author$project$GameState$Coordinate, 4, 2)),
+			_Utils_Tuple2(
+			$author$project$GameState$Letter(
+				_Utils_chr('A')),
+			A2($author$project$GameState$Coordinate, 4, 4)),
+			_Utils_Tuple2(
+			$author$project$GameState$Letter(
+				_Utils_chr('C')),
+			A2($author$project$GameState$Coordinate, 2, 4)),
+			_Utils_Tuple2(
+			$author$project$GameState$Letter(
+				_Utils_chr('K')),
+			A2($author$project$GameState$Coordinate, 3, 4)),
 			_Utils_Tuple2(
 			$author$project$GameState$Rock,
+			A2($author$project$GameState$Coordinate, 1, 0)),
+			_Utils_Tuple2(
+			$author$project$GameState$Rock,
+			A2($author$project$GameState$Coordinate, 1, 3)),
+			_Utils_Tuple2(
+			$author$project$GameState$Rock,
+			A2($author$project$GameState$Coordinate, 2, 3)),
+			_Utils_Tuple2(
+			$author$project$GameState$Belt($author$project$GameState$Up),
+			A2($author$project$GameState$Coordinate, 3, 2)),
+			_Utils_Tuple2(
+			$author$project$GameState$Belt($author$project$GameState$Left),
 			A2($author$project$GameState$Coordinate, 3, 3)),
 			_Utils_Tuple2(
-			$author$project$GameState$Belt($author$project$GameState$Right),
-			A2($author$project$GameState$Coordinate, 2, 1))
+			$author$project$GameState$Candy,
+			A2($author$project$GameState$Coordinate, 2, 2))
 		]));
 var $author$project$GameState$Grid = F3(
 	function (rows, columns, walls) {
@@ -5336,12 +5364,13 @@ var $author$project$GameState$testGrid = A3(
 	5,
 	_List_fromArray(
 		[
-			A3($author$project$GameState$Wall, $author$project$GameState$VWall, 1, 4)
+			A3($author$project$GameState$Wall, $author$project$GameState$VWall, 1, 2)
 		]));
 var $author$project$GameState$initialGame = A2(
 	$author$project$GameState$GameManager,
 	A2($author$project$GameState$GameState, $author$project$GameState$testGrid, $author$project$GameState$testEntities),
-	$author$project$GameState$Waiting);
+	$author$project$GameState$Waiting(
+		{candiedLetters: _List_Nil, eatenCandies: _List_Nil}));
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = _Utils_Tuple2($author$project$GameState$initialGame, $elm$core$Platform$Cmd$none);
@@ -6376,6 +6405,15 @@ var $elm$core$Array$get = F2(
 			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
 			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $elm$core$Elm$JsArray$map = _JsArray_map;
 var $elm$core$Array$map = F2(
 	function (func, _v0) {
@@ -6401,6 +6439,11 @@ var $elm$core$Array$map = F2(
 			A2($elm$core$Elm$JsArray$map, helper, tree),
 			A2($elm$core$Elm$JsArray$map, func, tail));
 	});
+var $elm$core$Basics$not = _Basics_not;
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (maybeValue.$ === 'Just') {
@@ -6420,15 +6463,6 @@ var $author$project$GameState$entitiesAtLocation = F2(
 				},
 				entities));
 	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $author$project$GameState$inBounds = F2(
 	function (grid, location) {
 		return (location.row >= 0) && ((location.column >= 0) && ((_Utils_cmp(location.row, grid.rows) < 0) && (_Utils_cmp(location.column, grid.columns) < 0)));
@@ -6518,7 +6552,6 @@ var $author$project$GameState$moveCoord = F2(
 				return coord;
 		}
 	});
-var $elm$core$Basics$not = _Basics_not;
 var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
 var $elm$core$Array$setHelp = F4(
 	function (shift, index, value, tree) {
@@ -6687,14 +6720,55 @@ var $author$project$GameState$updateMoves = F2(
 			moves);
 	});
 var $author$project$GameState$updateResolveMove = function (state) {
-	var isBelt = function (entity) {
-		var _v5 = entity.eType;
-		if (_v5.$ === 'Belt') {
+	var isLetter = function (entity) {
+		var _v8 = entity.eType;
+		if (_v8.$ === 'Letter') {
 			return true;
 		} else {
 			return false;
 		}
 	};
+	var isCandy = function (entity) {
+		var _v7 = entity.eType;
+		if (_v7.$ === 'Candy') {
+			return !entity.deleted;
+		} else {
+			return false;
+		}
+	};
+	var isBelt = function (entity) {
+		var _v6 = entity.eType;
+		if (_v6.$ === 'Belt') {
+			return true;
+		} else {
+			return false;
+		}
+	};
+	var candyUnderLetter = function (entity) {
+		return $elm$core$List$head(
+			A2(
+				$elm$core$List$filterMap,
+				$elm$core$Basics$identity,
+				A2(
+					$elm$core$List$map,
+					function (e) {
+						return (isLetter(entity) && (isCandy(e) && _Utils_eq(e.location, entity.location))) ? $elm$core$Maybe$Just(
+							_Utils_Tuple2(entity, e)) : $elm$core$Maybe$Nothing;
+					},
+					$elm$core$Array$toList(state.entities))));
+	};
+	var candyLetters = A2(
+		$elm$core$List$map,
+		function (_v5) {
+			var l = _v5.a;
+			var c = _v5.b;
+			return _Utils_Tuple2(l.ix, c.ix);
+		},
+		A2(
+			$elm$core$List$filterMap,
+			$elm$core$Basics$identity,
+			$elm$core$Array$toList(
+				A2($elm$core$Array$map, candyUnderLetter, state.entities))));
 	var beltUnderLetter = function (entity) {
 		var _v4 = entity.eType;
 		if (_v4.$ === 'Letter') {
@@ -6743,7 +6817,11 @@ var $author$project$GameState$updateResolveMove = function (state) {
 	var moves = _v0.a;
 	var state_ = _v0.b;
 	if (!moves.b) {
-		return $author$project$GameState$Waiting;
+		return $author$project$GameState$Waiting(
+			{
+				candiedLetters: A2($elm$core$List$map, $elm$core$Tuple$first, candyLetters),
+				eatenCandies: A2($elm$core$List$map, $elm$core$Tuple$second, candyLetters)
+			});
 	} else {
 		var mvs = moves;
 		return $author$project$GameState$MoveProcessed(
@@ -6788,8 +6866,25 @@ var $author$project$Main$updateAnim = function (model) {
 	return newModel;
 };
 var $author$project$GameState$Down = {$: 'Down'};
-var $author$project$GameState$Left = {$: 'Left'};
-var $author$project$GameState$Up = {$: 'Up'};
+var $author$project$GameState$Right = {$: 'Right'};
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
 var $elm$core$Tuple$pair = F2(
 	function (a, b) {
 		return _Utils_Tuple2(a, b);
@@ -6878,27 +6973,47 @@ var $author$project$GameState$scanLetters = F2(
 		}();
 		return $elm$core$List$concat(scanned);
 	});
-var $author$project$GameState$updateInitialMove = F2(
-	function (state, direction) {
+var $author$project$GameState$updateInitialMove = F4(
+	function (state, candied, eatenCandies, direction) {
 		var letters = A2($author$project$GameState$scanLetters, state, direction);
-		var moveCandidates = A3(
-			$elm$core$List$map2,
-			$elm$core$Tuple$pair,
-			A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.ix;
-				},
-				letters),
-			A2(
-				$elm$core$List$repeat,
-				$elm$core$List$length(letters),
-				direction));
+		var canMove = function (ix) {
+			return $elm$core$List$isEmpty(candied) ? true : A2($elm$core$List$member, ix, candied);
+		};
+		var moveCandidates = A2(
+			$elm$core$List$filter,
+			function (_v1) {
+				var ix = _v1.a;
+				return canMove(ix);
+			},
+			A3(
+				$elm$core$List$map2,
+				$elm$core$Tuple$pair,
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.ix;
+					},
+					letters),
+				A2(
+					$elm$core$List$repeat,
+					$elm$core$List$length(letters),
+					direction)));
 		var _v0 = A2($author$project$GameState$updateMoves, moveCandidates, state);
 		var moves = _v0.a;
 		var state_ = _v0.b;
+		var entities_ = A2(
+			$elm$core$Array$map,
+			function (e) {
+				return A2($elm$core$List$member, e.ix, eatenCandies) ? _Utils_update(
+					e,
+					{deleted: true}) : e;
+			},
+			state_.entities);
+		var state__ = _Utils_update(
+			state_,
+			{entities: entities_});
 		return $author$project$GameState$MoveProcessed(
-			{moves: moves, updatedState: state_});
+			{moves: moves, updatedState: state__});
 	});
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
@@ -6937,12 +7052,13 @@ var $author$project$Main$updateKeyboard = F2(
 		var newStage = function () {
 			var _v0 = model.stage;
 			if (_v0.$ === 'Waiting') {
+				var info = _v0.a;
 				return A2(
 					$elm$core$Maybe$withDefault,
 					model.stage,
 					A2(
 						$elm$core$Maybe$map,
-						$author$project$GameState$updateInitialMove(model.gamestate),
+						A3($author$project$GameState$updateInitialMove, model.gamestate, info.candiedLetters, info.eatenCandies),
 						direction));
 			} else {
 				return model.stage;
@@ -7135,10 +7251,6 @@ var $mdgriffith$elm_ui$Internal$Model$lengthClassName = function (x) {
 			var len = x.b;
 			return 'max' + ($elm$core$String$fromInt(max) + $mdgriffith$elm_ui$Internal$Model$lengthClassName(len));
 	}
-};
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
 };
 var $elm$core$Basics$round = _Basics_round;
 var $mdgriffith$elm_ui$Internal$Model$floatClass = function (x) {
@@ -10277,17 +10389,6 @@ var $mdgriffith$elm_ui$Internal$Model$adjust = F3(
 	function (size, height, vertical) {
 		return {height: height / size, size: size, vertical: vertical};
 	});
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
 var $elm$core$List$maximum = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -10747,13 +10848,6 @@ var $mdgriffith$elm_ui$Internal$Model$finalizeNode = F6(
 				return html;
 		}
 	});
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $mdgriffith$elm_ui$Internal$Model$textElementClasses = $mdgriffith$elm_ui$Internal$Style$classes.any + (' ' + ($mdgriffith$elm_ui$Internal$Style$classes.text + (' ' + ($mdgriffith$elm_ui$Internal$Style$classes.widthContent + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.heightContent)))));
 var $mdgriffith$elm_ui$Internal$Model$textElement = function (str) {
@@ -12433,15 +12527,14 @@ var $author$project$GameView$NoContents = {$: 'NoContents'};
 var $author$project$GameView$Text = function (a) {
 	return {$: 'Text', a: a};
 };
-var $author$project$GameView$resources = {beltUrl: '../resources/belt.png', rockUrl: '../resources/rock.png'};
 var $author$project$GameView$tileSize = 50;
 var $author$project$GameView$gameTiles = function (manager) {
 	var gamestate = manager.gamestate;
 	var getTile = function (coord) {
 		var offset = function (entity) {
-			var _v1 = manager.stage;
-			if (_v1.$ === 'Animating') {
-				var info = _v1.a;
+			var _v5 = manager.stage;
+			if (_v5.$ === 'Animating') {
+				var info = _v5.a;
 				var offsetPerTick = $author$project$GameView$tileSize / info.duration;
 				var pxOffset = offsetPerTick * info.tickCount;
 				var offsetInDir = function (dir) {
@@ -12461,15 +12554,15 @@ var $author$project$GameView$gameTiles = function (manager) {
 				var move = $elm$core$List$head(
 					A2(
 						$elm$core$List$filter,
-						function (_v4) {
-							var ix = _v4.a;
-							var dir = _v4.b;
+						function (_v8) {
+							var ix = _v8.a;
+							var dir = _v8.b;
 							return _Utils_eq(ix, entity.ix);
 						},
 						info.moveInfo.moves));
 				if (move.$ === 'Just') {
-					var _v3 = move.a;
-					var dir = _v3.b;
+					var _v7 = move.a;
+					var dir = _v7.b;
 					return offsetInDir(dir);
 				} else {
 					return _Utils_Tuple2(0, 0);
@@ -12479,17 +12572,36 @@ var $author$project$GameView$gameTiles = function (manager) {
 			}
 		};
 		var entityTileContent = function (entity) {
-			var _v0 = entity.eType;
-			switch (_v0.$) {
-				case 'Letter':
-					var ch = _v0.a;
-					return $author$project$GameView$Text(ch);
-				case 'Rock':
-					return $author$project$GameView$Image($author$project$GameView$resources.rockUrl);
-				case 'Belt':
-					return $author$project$GameView$Image($author$project$GameView$resources.beltUrl);
-				default:
-					return $author$project$GameView$NoContents;
+			if (entity.deleted) {
+				return $author$project$GameView$NoContents;
+			} else {
+				var _v0 = entity.eType;
+				switch (_v0.$) {
+					case 'Letter':
+						var ch = _v0.a;
+						return $author$project$GameView$Text(ch);
+					case 'Rock':
+						return $author$project$GameView$Image('../resources/rock.png');
+					case 'Candy':
+						return $author$project$GameView$Image('../resources/candy.png');
+					default:
+						switch (_v0.a.$) {
+							case 'Right':
+								var _v1 = _v0.a;
+								return $author$project$GameView$Image('../resources/belt_right.png');
+							case 'Left':
+								var _v2 = _v0.a;
+								return $author$project$GameView$Image('../resources/belt_left.png');
+							case 'Down':
+								var _v3 = _v0.a;
+								return $author$project$GameView$Image('../resources/belt_down.png');
+							case 'Up':
+								var _v4 = _v0.a;
+								return $author$project$GameView$Image('../resources/belt_up.png');
+							default:
+								return $author$project$GameView$NoContents;
+						}
+				}
 			}
 		};
 		var entities = A2($author$project$GameState$entitiesAtLocation, gamestate.entities, coord);
