@@ -5321,11 +5321,23 @@ var $author$project$GameState$testEntities = $author$project$GameState$makeEntit
 			$author$project$GameState$Belt($author$project$GameState$Right),
 			A2($author$project$GameState$Coordinate, 2, 1))
 		]));
-var $author$project$GameState$Grid = F2(
-	function (rows, columns) {
-		return {columns: columns, rows: rows};
+var $author$project$GameState$Grid = F3(
+	function (rows, columns, walls) {
+		return {columns: columns, rows: rows, walls: walls};
 	});
-var $author$project$GameState$testGrid = A2($author$project$GameState$Grid, 5, 5);
+var $author$project$GameState$VWall = {$: 'VWall'};
+var $author$project$GameState$Wall = F3(
+	function (orientation, along, between) {
+		return {along: along, between: between, orientation: orientation};
+	});
+var $author$project$GameState$testGrid = A3(
+	$author$project$GameState$Grid,
+	5,
+	5,
+	_List_fromArray(
+		[
+			A3($author$project$GameState$Wall, $author$project$GameState$VWall, 1, 4)
+		]));
 var $author$project$GameState$initialGame = A2(
 	$author$project$GameState$GameManager,
 	A2($author$project$GameState$GameState, $author$project$GameState$testGrid, $author$project$GameState$testEntities),
@@ -6421,6 +6433,58 @@ var $author$project$GameState$inBounds = F2(
 	function (grid, location) {
 		return (location.row >= 0) && ((location.column >= 0) && ((_Utils_cmp(location.row, grid.rows) < 0) && (_Utils_cmp(location.column, grid.columns) < 0)));
 	});
+var $author$project$GameState$HWall = {$: 'HWall'};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $author$project$GameState$isEdgeWall = F3(
+	function (grid, location, edge) {
+		var wall = function () {
+			switch (edge.$) {
+				case 'Up':
+					return A3($author$project$GameState$Wall, $author$project$GameState$HWall, location.row, location.column);
+				case 'Down':
+					return A3($author$project$GameState$Wall, $author$project$GameState$HWall, location.row + 1, location.column);
+				case 'Left':
+					return A3($author$project$GameState$Wall, $author$project$GameState$VWall, location.row, location.column);
+				case 'Right':
+					return A3($author$project$GameState$Wall, $author$project$GameState$VWall, location.row, location.column + 1);
+				default:
+					return A3($author$project$GameState$Wall, $author$project$GameState$VWall, -1, -1);
+			}
+		}();
+		return A2($elm$core$List$member, wall, grid.walls);
+	});
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -6559,7 +6623,15 @@ var $author$project$GameState$moveValid = F3(
 				return false;
 			}
 		}();
-		var canMove = entityExists && ((!targetBlocks) && inGrid);
+		var wallBlocks = function () {
+			if (entityLoc.$ === 'Just') {
+				var l = entityLoc.a;
+				return A3($author$project$GameState$isEdgeWall, state.grid, l, direction);
+			} else {
+				return false;
+			}
+		}();
+		var canMove = entityExists && ((!targetBlocks) && ((!wallBlocks) && inGrid));
 		var entity_ = function () {
 			if (canMove) {
 				if (entity.$ === 'Just') {
@@ -6679,7 +6751,7 @@ var $author$project$GameState$updateResolveMove = function (state) {
 	}
 };
 var $author$project$Main$updateAnim = function (model) {
-	var animDuration = 5;
+	var animDuration = 3;
 	var newModel = function () {
 		var _v0 = model.stage;
 		switch (_v0.$) {
@@ -9475,27 +9547,6 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			_Json_emptyObject(_Utils_Tuple0),
 			pairs));
 };
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
 var $mdgriffith$elm_ui$Internal$Model$fontName = function (font) {
 	switch (font.$) {
 		case 'Serif':
@@ -9542,9 +9593,6 @@ var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
 	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $mdgriffith$elm_ui$Internal$Model$renderProps = F3(
 	function (force, _v0, existing) {
 		var key = _v0.a;
@@ -12573,8 +12621,11 @@ var $mdgriffith$elm_ui$Element$Border$widthEach = function (_v0) {
 			bottom,
 			left));
 };
-var $author$project$GameView$gridTile = F2(
-	function (edges, tile) {
+var $author$project$GameView$gridTile = F4(
+	function (edges, location, grid, tile) {
+		var wallBorder = function (dir) {
+			return A3($author$project$GameState$isEdgeWall, grid, location, dir) ? 2 : 0;
+		};
 		var letterContent = $elm$core$List$head(
 			A2(
 				$elm$core$List$filter,
@@ -12603,10 +12654,10 @@ var $author$project$GameView$gridTile = F2(
 			return isEdge ? 2 : 1;
 		};
 		var borders = {
-			bottom: border(edges.bottom),
-			left: border(edges.left),
-			right: border(edges.right),
-			top: border(edges.top)
+			bottom: border(edges.bottom) + wallBorder($author$project$GameState$Down),
+			left: border(edges.left) + wallBorder($author$project$GameState$Left),
+			right: border(edges.right) + wallBorder($author$project$GameState$Right),
+			top: border(edges.top) + wallBorder($author$project$GameState$Up)
 		};
 		var background = function () {
 			if ((imageContent.$ === 'Just') && (imageContent.a.a.$ === 'Image')) {
@@ -12696,6 +12747,9 @@ var $author$project$GameView$gameview = function (manager) {
 	};
 	var gridRow = F2(
 		function (rowIx, row) {
+			var coord = function (colIx) {
+				return A2($author$project$GameState$Coordinate, rowIx, colIx);
+			};
 			return A2(
 				$mdgriffith$elm_ui$Element$row,
 				_List_Nil,
@@ -12703,10 +12757,12 @@ var $author$project$GameView$gameview = function (manager) {
 					$elm$core$List$indexedMap,
 					F2(
 						function (colIx, tile) {
-							return A2(
+							return A4(
 								$author$project$GameView$gridTile,
 								getEdges(
-									A2($author$project$GameState$Coordinate, rowIx, colIx)),
+									coord(colIx)),
+								coord(colIx),
+								state.grid,
 								tile);
 						}),
 					row));
