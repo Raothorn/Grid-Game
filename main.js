@@ -5231,11 +5231,18 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$GameState$GameState = F3(
-	function (grid, entities, stage) {
-		return {entities: entities, grid: grid, stage: stage};
+var $author$project$GameState$GameManager = F2(
+	function (gamestate, stage) {
+		return {gamestate: gamestate, stage: stage};
+	});
+var $author$project$GameState$GameState = F2(
+	function (grid, entities) {
+		return {entities: entities, grid: grid};
 	});
 var $author$project$GameState$Waiting = {$: 'Waiting'};
+var $author$project$GameState$Belt = function (a) {
+	return {$: 'Belt', a: a};
+};
 var $author$project$GameState$Coordinate = F2(
 	function (row, column) {
 		return {column: column, row: row};
@@ -5243,6 +5250,7 @@ var $author$project$GameState$Coordinate = F2(
 var $author$project$GameState$Letter = function (a) {
 	return {$: 'Letter', a: a};
 };
+var $author$project$GameState$Right = {$: 'Right'};
 var $author$project$GameState$Rock = {$: 'Rock'};
 var $author$project$GameState$Entity = F4(
 	function (ix, eType, location, deleted) {
@@ -5308,17 +5316,23 @@ var $author$project$GameState$testEntities = $author$project$GameState$makeEntit
 			A2($author$project$GameState$Coordinate, 0, 1)),
 			_Utils_Tuple2(
 			$author$project$GameState$Rock,
-			A2($author$project$GameState$Coordinate, 3, 3))
+			A2($author$project$GameState$Coordinate, 3, 3)),
+			_Utils_Tuple2(
+			$author$project$GameState$Belt($author$project$GameState$Right),
+			A2($author$project$GameState$Coordinate, 2, 1))
 		]));
 var $author$project$GameState$Grid = F2(
 	function (rows, columns) {
 		return {columns: columns, rows: rows};
 	});
 var $author$project$GameState$testGrid = A2($author$project$GameState$Grid, 5, 5);
-var $author$project$GameState$initialGameState = A3($author$project$GameState$GameState, $author$project$GameState$testGrid, $author$project$GameState$testEntities, $author$project$GameState$Waiting);
+var $author$project$GameState$initialGame = A2(
+	$author$project$GameState$GameManager,
+	A2($author$project$GameState$GameState, $author$project$GameState$testGrid, $author$project$GameState$testEntities),
+	$author$project$GameState$Waiting);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$Main$init = _Utils_Tuple2($author$project$GameState$initialGameState, $elm$core$Platform$Cmd$none);
+var $author$project$Main$init = _Utils_Tuple2($author$project$GameState$initialGame, $elm$core$Platform$Cmd$none);
 var $author$project$Main$HandleKeyboardEvent = function (a) {
 	return {$: 'HandleKeyboardEvent', a: a};
 };
@@ -6287,42 +6301,126 @@ var $author$project$Main$subscriptions = function (model) {
 var $author$project$GameState$Animating = function (a) {
 	return {$: 'Animating', a: a};
 };
-var $author$project$Main$updateAnim = function (model) {
-	var animDuration = 5;
-	var newModel = function () {
-		var _v0 = model.stage;
-		switch (_v0.$) {
-			case 'InitialMoveProcessed':
-				var moveInfo = _v0.a;
-				var animStage = $author$project$GameState$Animating(
-					{duration: animDuration, moveInfo: moveInfo, tickCount: 0});
-				return _Utils_update(
-					model,
-					{stage: animStage});
-			case 'Animating':
-				var info = _v0.a;
-				var updatedState = info.moveInfo.updatedState;
-				return (_Utils_cmp(info.tickCount, animDuration) < 0) ? _Utils_update(
-					model,
-					{
-						stage: $author$project$GameState$Animating(
-							_Utils_update(
-								info,
-								{tickCount: info.tickCount + 1}))
-					}) : _Utils_update(
-					updatedState,
-					{stage: $author$project$GameState$Waiting});
-			default:
-				return model;
-		}
-	}();
-	return newModel;
+var $author$project$GameState$FinishedAnimating = {$: 'FinishedAnimating'};
+var $author$project$GameState$MoveInfo = F2(
+	function (updatedState, moves) {
+		return {moves: moves, updatedState: updatedState};
+	});
+var $author$project$GameState$MoveProcessed = function (a) {
+	return {$: 'MoveProcessed', a: a};
 };
-var $author$project$GameState$Down = {$: 'Down'};
-var $author$project$GameState$Left = {$: 'Left'};
-var $author$project$GameState$Right = {$: 'Right'};
-var $author$project$GameState$Up = {$: 'Up'};
-var $elm$core$Debug$log = _Debug_log;
+var $author$project$GameState$NoDirection = {$: 'NoDirection'};
+var $elm$core$Array$filter = F2(
+	function (isGood, array) {
+		return $elm$core$Array$fromList(
+			A3(
+				$elm$core$Array$foldr,
+				F2(
+					function (x, xs) {
+						return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+					}),
+				_List_Nil,
+				array));
+	});
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
+			} else {
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
+			}
+		}
+	});
+var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
+	});
+var $elm$core$Elm$JsArray$map = _JsArray_map;
+var $elm$core$Array$map = F2(
+	function (func, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var helper = function (node) {
+			if (node.$ === 'SubTree') {
+				var subTree = node.a;
+				return $elm$core$Array$SubTree(
+					A2($elm$core$Elm$JsArray$map, helper, subTree));
+			} else {
+				var values = node.a;
+				return $elm$core$Array$Leaf(
+					A2($elm$core$Elm$JsArray$map, func, values));
+			}
+		};
+		return A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A2($elm$core$Elm$JsArray$map, helper, tree),
+			A2($elm$core$Elm$JsArray$map, func, tail));
+	});
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$GameState$entitiesAtLocation = F2(
+	function (entities, location) {
+		return $elm$core$Array$toList(
+			A2(
+				$elm$core$Array$filter,
+				function (e) {
+					return _Utils_eq(e.location, location);
+				},
+				entities));
+	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$GameState$inBounds = F2(
+	function (grid, location) {
+		return (location.row >= 0) && ((location.column >= 0) && ((_Utils_cmp(location.row, grid.rows) < 0) && (_Utils_cmp(location.column, grid.columns) < 0)));
+	});
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -6333,9 +6431,6 @@ var $elm$core$Maybe$map = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$GameState$InitialMoveProcessed = function (a) {
-	return {$: 'InitialMoveProcessed', a: a};
-};
 var $author$project$GameState$moveCoord = F2(
 	function (direction, coord) {
 		switch (direction.$) {
@@ -6351,59 +6446,58 @@ var $author$project$GameState$moveCoord = F2(
 				return _Utils_update(
 					coord,
 					{column: coord.column - 1});
-			default:
+			case 'Right':
 				return _Utils_update(
 					coord,
 					{column: coord.column + 1});
+			default:
+				return coord;
 		}
-	});
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $elm$core$Array$filter = F2(
-	function (isGood, array) {
-		return $elm$core$Array$fromList(
-			A3(
-				$elm$core$Array$foldr,
-				F2(
-					function (x, xs) {
-						return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-					}),
-				_List_Nil,
-				array));
-	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$GameState$entityAtLocation = F2(
-	function (entities, location) {
-		return $elm$core$List$head(
-			$elm$core$Array$toList(
-				A2(
-					$elm$core$Array$filter,
-					function (e) {
-						return _Utils_eq(e.location, location);
-					},
-					entities)));
-	});
-var $elm$core$Basics$ge = _Utils_ge;
-var $author$project$GameState$inBounds = F2(
-	function (grid, location) {
-		return (location.row >= 0) && ((location.column >= 0) && ((_Utils_cmp(location.row, grid.rows) < 0) && (_Utils_cmp(location.column, grid.columns) < 0)));
 	});
 var $elm$core$Basics$not = _Basics_not;
+var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
+var $elm$core$Array$setHelp = F4(
+	function (shift, index, value, tree) {
+		var pos = $elm$core$Array$bitMask & (index >>> shift);
+		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+		if (_v0.$ === 'SubTree') {
+			var subTree = _v0.a;
+			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$SubTree(newSub),
+				tree);
+		} else {
+			var values = _v0.a;
+			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$Leaf(newLeaf),
+				tree);
+		}
+	});
+var $elm$core$Array$set = F3(
+	function (index, value, array) {
+		var len = array.a;
+		var startShift = array.b;
+		var tree = array.c;
+		var tail = array.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			tree,
+			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A4($elm$core$Array$setHelp, startShift, index, value, tree),
+			tail));
+	});
 var $author$project$GameState$moveValid = F3(
 	function (state, entityIx, direction) {
 		var entityBlocks = function (eType) {
@@ -6452,8 +6546,11 @@ var $author$project$GameState$moveValid = F3(
 		}();
 		var targetEntity = A2(
 			$elm$core$Maybe$andThen,
-			$author$project$GameState$entityAtLocation(state.entities),
-			targetLoc);
+			$elm$core$List$head,
+			A2(
+				$elm$core$Maybe$map,
+				$author$project$GameState$entitiesAtLocation(state.entities),
+				targetLoc));
 		var targetBlocks = function () {
 			if (targetEntity.$ === 'Just') {
 				var t = targetEntity.a;
@@ -6462,7 +6559,189 @@ var $author$project$GameState$moveValid = F3(
 				return false;
 			}
 		}();
-		return entityExists && ((!targetBlocks) && inGrid);
+		var canMove = entityExists && ((!targetBlocks) && inGrid);
+		var entity_ = function () {
+			if (canMove) {
+				if (entity.$ === 'Just') {
+					var e = entity.a;
+					return A2(
+						$elm$core$Maybe$map,
+						function (newLoc) {
+							return _Utils_update(
+								e,
+								{location: newLoc});
+						},
+						targetLoc);
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			} else {
+				return entity;
+			}
+		}();
+		var entities_ = function () {
+			if (entity_.$ === 'Just') {
+				var e_ = entity_.a;
+				return A3($elm$core$Array$set, entityIx, e_, state.entities);
+			} else {
+				return state.entities;
+			}
+		}();
+		var state_ = _Utils_update(
+			state,
+			{entities: entities_});
+		return _Utils_Tuple2(canMove, state_);
+	});
+var $author$project$GameState$updateMoves = F2(
+	function (moves, state) {
+		var updateMove = F2(
+			function (move, _v2) {
+				var moved = _v2.a;
+				var gs = _v2.b;
+				var _v0 = move;
+				var ix = _v0.a;
+				var dir = _v0.b;
+				var _v1 = A3($author$project$GameState$moveValid, gs, ix, dir);
+				var valid = _v1.a;
+				var gs_ = _v1.b;
+				var moved_ = valid ? A2($elm$core$List$cons, move, moved) : moved;
+				var newState = valid ? gs_ : gs;
+				return _Utils_Tuple2(moved_, newState);
+			});
+		return A3(
+			$elm$core$List$foldl,
+			updateMove,
+			_Utils_Tuple2(_List_Nil, state),
+			moves);
+	});
+var $author$project$GameState$updateResolveMove = function (state) {
+	var isBelt = function (entity) {
+		var _v5 = entity.eType;
+		if (_v5.$ === 'Belt') {
+			return true;
+		} else {
+			return false;
+		}
+	};
+	var beltUnderLetter = function (entity) {
+		var _v4 = entity.eType;
+		if (_v4.$ === 'Letter') {
+			return A2(
+				$elm$core$Array$get,
+				0,
+				A2(
+					$elm$core$Array$map,
+					function (b) {
+						return _Utils_Tuple2(entity, b);
+					},
+					A2(
+						$elm$core$Array$filter,
+						function (e) {
+							return isBelt(e) && _Utils_eq(e.location, entity.location);
+						},
+						state.entities)));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	};
+	var beltDir = function (entity) {
+		var _v3 = entity.eType;
+		if (_v3.$ === 'Belt') {
+			var dir = _v3.a;
+			return dir;
+		} else {
+			return $author$project$GameState$NoDirection;
+		}
+	};
+	var moveCandidates = A2(
+		$elm$core$List$map,
+		function (_v2) {
+			var l = _v2.a;
+			var b = _v2.b;
+			return _Utils_Tuple2(
+				l.ix,
+				beltDir(b));
+		},
+		A2(
+			$elm$core$List$filterMap,
+			$elm$core$Basics$identity,
+			$elm$core$Array$toList(
+				A2($elm$core$Array$map, beltUnderLetter, state.entities))));
+	var _v0 = A2($author$project$GameState$updateMoves, moveCandidates, state);
+	var moves = _v0.a;
+	var state_ = _v0.b;
+	if (!moves.b) {
+		return $author$project$GameState$Waiting;
+	} else {
+		var mvs = moves;
+		return $author$project$GameState$MoveProcessed(
+			A2($author$project$GameState$MoveInfo, state_, moves));
+	}
+};
+var $author$project$Main$updateAnim = function (model) {
+	var animDuration = 5;
+	var newModel = function () {
+		var _v0 = model.stage;
+		switch (_v0.$) {
+			case 'MoveProcessed':
+				var moveInfo = _v0.a;
+				var animStage = $author$project$GameState$Animating(
+					{duration: animDuration, moveInfo: moveInfo, tickCount: 0});
+				return _Utils_update(
+					model,
+					{stage: animStage});
+			case 'Animating':
+				var info = _v0.a;
+				var updatedState = info.moveInfo.updatedState;
+				return (_Utils_cmp(info.tickCount, animDuration) < 0) ? _Utils_update(
+					model,
+					{
+						stage: $author$project$GameState$Animating(
+							_Utils_update(
+								info,
+								{tickCount: info.tickCount + 1}))
+					}) : _Utils_update(
+					model,
+					{gamestate: updatedState, stage: $author$project$GameState$FinishedAnimating});
+			case 'FinishedAnimating':
+				return _Utils_update(
+					model,
+					{
+						stage: $author$project$GameState$updateResolveMove(model.gamestate)
+					});
+			default:
+				return model;
+		}
+	}();
+	return newModel;
+};
+var $author$project$GameState$Down = {$: 'Down'};
+var $author$project$GameState$Left = {$: 'Left'};
+var $author$project$GameState$Up = {$: 'Up'};
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
 	});
 var $elm$core$List$append = F2(
 	function (xs, ys) {
@@ -6516,102 +6795,38 @@ var $author$project$GameState$scanLetters = F2(
 						$elm$core$List$reverse(rowIxs));
 				case 'Left':
 					return A2($elm$core$List$map, scanCol, colIxs);
-				default:
+				case 'Right':
 					return A2(
 						$elm$core$List$map,
 						scanCol,
 						$elm$core$List$reverse(colIxs));
+				default:
+					return _List_Nil;
 			}
 		}();
 		return $elm$core$List$concat(scanned);
 	});
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
-var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
-var $elm$core$Array$setHelp = F4(
-	function (shift, index, value, tree) {
-		var pos = $elm$core$Array$bitMask & (index >>> shift);
-		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-		if (_v0.$ === 'SubTree') {
-			var subTree = _v0.a;
-			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$SubTree(newSub),
-				tree);
-		} else {
-			var values = _v0.a;
-			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$Leaf(newLeaf),
-				tree);
-		}
-	});
-var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var $elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
-};
-var $elm$core$Array$set = F3(
-	function (index, value, array) {
-		var len = array.a;
-		var startShift = array.b;
-		var tree = array.c;
-		var tail = array.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			tree,
-			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A4($elm$core$Array$setHelp, startShift, index, value, tree),
-			tail));
-	});
 var $author$project$GameState$updateInitialMove = F2(
 	function (state, direction) {
-		var moveLetter = F2(
-			function (letter, gs) {
-				return A3($author$project$GameState$moveValid, gs, letter.ix, direction) ? _Utils_Tuple2(
-					_Utils_update(
-						letter,
-						{
-							location: A2($author$project$GameState$moveCoord, direction, letter.location)
-						}),
-					true) : _Utils_Tuple2(letter, false);
-			});
-		var updateMove = F2(
-			function (letter, _v2) {
-				var moved = _v2.a;
-				var gs = _v2.b;
-				var _v1 = A2(moveLetter, letter, gs);
-				var letter_ = _v1.a;
-				var didMove = _v1.b;
-				var moved_ = didMove ? A2($elm$core$List$cons, letter.ix, moved) : moved;
-				var entities_ = A3($elm$core$Array$set, letter.ix, letter_, gs.entities);
-				var gs_ = _Utils_update(
-					gs,
-					{entities: entities_});
-				return _Utils_Tuple2(moved_, gs_);
-			});
 		var letters = A2($author$project$GameState$scanLetters, state, direction);
-		var _v0 = A3(
-			$elm$core$List$foldl,
-			updateMove,
-			_Utils_Tuple2(_List_Nil, state),
-			letters);
-		var movedLetters = _v0.a;
+		var moveCandidates = A3(
+			$elm$core$List$map2,
+			$elm$core$Tuple$pair,
+			A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.ix;
+				},
+				letters),
+			A2(
+				$elm$core$List$repeat,
+				$elm$core$List$length(letters),
+				direction));
+		var _v0 = A2($author$project$GameState$updateMoves, moveCandidates, state);
+		var moves = _v0.a;
 		var state_ = _v0.b;
-		return $author$project$GameState$InitialMoveProcessed(
-			{moveDirection: direction, movedLetters: movedLetters, updatedState: state_});
+		return $author$project$GameState$MoveProcessed(
+			{moves: moves, updatedState: state_});
 	});
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
@@ -6625,8 +6840,8 @@ var $elm$core$Maybe$withDefault = F2(
 var $author$project$Main$updateKeyboard = F2(
 	function (event, model) {
 		var direction = function () {
-			var _v2 = event.keyCode;
-			switch (_v2.$) {
+			var _v1 = event.keyCode;
+			switch (_v1.$) {
 				case 'S':
 					return $elm$core$Maybe$Just($author$project$GameState$Down);
 				case 'W':
@@ -6648,20 +6863,19 @@ var $author$project$Main$updateKeyboard = F2(
 			}
 		}();
 		var newStage = function () {
-			var _v1 = model.stage;
-			if (_v1.$ === 'Waiting') {
+			var _v0 = model.stage;
+			if (_v0.$ === 'Waiting') {
 				return A2(
 					$elm$core$Maybe$withDefault,
 					model.stage,
 					A2(
 						$elm$core$Maybe$map,
-						$author$project$GameState$updateInitialMove(model),
+						$author$project$GameState$updateInitialMove(model.gamestate),
 						direction));
 			} else {
 				return model.stage;
 			}
 		}();
-		var _v0 = A2($elm$core$Debug$log, 'stage', newStage);
 		return _Utils_update(
 			model,
 			{stage: newStage});
@@ -12171,77 +12385,74 @@ var $author$project$GameView$NoContents = {$: 'NoContents'};
 var $author$project$GameView$Text = function (a) {
 	return {$: 'Text', a: a};
 };
-var $author$project$GameView$Tile = F2(
-	function (contents, offset) {
-		return {contents: contents, offset: offset};
-	});
-var $elm$core$List$member = F2(
-	function (x, xs) {
-		return A2(
-			$elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
-	});
-var $author$project$GameView$resources = {rockUrl: 'https://www.seekpng.com/png/full/396-3967087_rock-goron-mask-pixel-art.png'};
+var $author$project$GameView$resources = {beltUrl: '../resources/belt.png', rockUrl: '../resources/rock.png'};
 var $author$project$GameView$tileSize = 50;
-var $author$project$GameView$gameTiles = function (gamestate) {
-	var getOffset = function (coord) {
-		var _v2 = gamestate.stage;
-		if (_v2.$ === 'Animating') {
-			var info = _v2.a;
-			var offsetPerTick = $author$project$GameView$tileSize / info.duration;
-			var pxOffset = offsetPerTick * info.tickCount;
-			var offsetInDir = function (dir) {
-				switch (dir.$) {
-					case 'Up':
-						return _Utils_Tuple2(0, -pxOffset);
-					case 'Down':
-						return _Utils_Tuple2(0, pxOffset);
-					case 'Left':
-						return _Utils_Tuple2(-pxOffset, 0);
-					default:
-						return _Utils_Tuple2(pxOffset, 0);
-				}
-			};
-			var entity = A2($author$project$GameState$entityAtLocation, gamestate.entities, coord);
-			var offset = function () {
-				if (entity.$ === 'Just') {
-					var e = entity.a;
-					return A2($elm$core$List$member, e.ix, info.moveInfo.movedLetters) ? offsetInDir(info.moveInfo.moveDirection) : _Utils_Tuple2(0, 0);
+var $author$project$GameView$gameTiles = function (manager) {
+	var gamestate = manager.gamestate;
+	var getTile = function (coord) {
+		var offset = function (entity) {
+			var _v1 = manager.stage;
+			if (_v1.$ === 'Animating') {
+				var info = _v1.a;
+				var offsetPerTick = $author$project$GameView$tileSize / info.duration;
+				var pxOffset = offsetPerTick * info.tickCount;
+				var offsetInDir = function (dir) {
+					switch (dir.$) {
+						case 'Up':
+							return _Utils_Tuple2(0, -pxOffset);
+						case 'Down':
+							return _Utils_Tuple2(0, pxOffset);
+						case 'Left':
+							return _Utils_Tuple2(-pxOffset, 0);
+						case 'Right':
+							return _Utils_Tuple2(pxOffset, 0);
+						default:
+							return _Utils_Tuple2(0, 0);
+					}
+				};
+				var move = $elm$core$List$head(
+					A2(
+						$elm$core$List$filter,
+						function (_v4) {
+							var ix = _v4.a;
+							var dir = _v4.b;
+							return _Utils_eq(ix, entity.ix);
+						},
+						info.moveInfo.moves));
+				if (move.$ === 'Just') {
+					var _v3 = move.a;
+					var dir = _v3.b;
+					return offsetInDir(dir);
 				} else {
 					return _Utils_Tuple2(0, 0);
 				}
-			}();
-			return offset;
-		} else {
-			return _Utils_Tuple2(0, 0);
-		}
-	};
-	var getContents = function (coord) {
-		var entity = A2($author$project$GameState$entityAtLocation, gamestate.entities, coord);
-		if (entity.$ === 'Just') {
-			var e = entity.a;
-			var _v1 = e.eType;
-			switch (_v1.$) {
+			} else {
+				return _Utils_Tuple2(0, 0);
+			}
+		};
+		var entityTileContent = function (entity) {
+			var _v0 = entity.eType;
+			switch (_v0.$) {
 				case 'Letter':
-					var ch = _v1.a;
+					var ch = _v0.a;
 					return $author$project$GameView$Text(ch);
 				case 'Rock':
 					return $author$project$GameView$Image($author$project$GameView$resources.rockUrl);
+				case 'Belt':
+					return $author$project$GameView$Image($author$project$GameView$resources.beltUrl);
 				default:
 					return $author$project$GameView$NoContents;
 			}
-		} else {
-			return $author$project$GameView$NoContents;
-		}
-	};
-	var getTile = function (coord) {
+		};
+		var entities = A2($author$project$GameState$entitiesAtLocation, gamestate.entities, coord);
 		return A2(
-			$author$project$GameView$Tile,
-			getContents(coord),
-			getOffset(coord));
+			$elm$core$List$map,
+			function (e) {
+				return _Utils_Tuple2(
+					entityTileContent(e),
+					offset(e));
+			},
+			entities);
 	};
 	var coordinates = function () {
 		var rowList = A2($elm$core$List$range, 0, gamestate.grid.rows - 1);
@@ -12274,57 +12485,11 @@ var $elm$core$String$cons = _String_cons;
 var $elm$core$String$fromChar = function (_char) {
 	return A2($elm$core$String$cons, _char, '');
 };
-var $elm$html$Html$Attributes$alt = $elm$html$Html$Attributes$stringProperty('alt');
-var $elm$html$Html$Attributes$src = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'src',
-		_VirtualDom_noJavaScriptOrHtmlUri(url));
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $mdgriffith$elm_ui$Element$Background$image = function (src) {
+	return $mdgriffith$elm_ui$Internal$Model$Attr(
+		A2($elm$virtual_dom$VirtualDom$style, 'background', 'url(\"' + (src + '\") center / cover no-repeat')));
 };
-var $mdgriffith$elm_ui$Element$image = F2(
-	function (attrs, _v0) {
-		var src = _v0.src;
-		var description = _v0.description;
-		var imageAttributes = A2(
-			$elm$core$List$filter,
-			function (a) {
-				switch (a.$) {
-					case 'Width':
-						return true;
-					case 'Height':
-						return true;
-					default:
-						return false;
-				}
-			},
-			attrs);
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asEl,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.imageContainer),
-				attrs),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
-				_List_fromArray(
-					[
-						A4(
-						$mdgriffith$elm_ui$Internal$Model$element,
-						$mdgriffith$elm_ui$Internal$Model$asEl,
-						$mdgriffith$elm_ui$Internal$Model$NodeName('img'),
-						_Utils_ap(
-							_List_fromArray(
-								[
-									$mdgriffith$elm_ui$Internal$Model$Attr(
-									$elm$html$Html$Attributes$src(src)),
-									$mdgriffith$elm_ui$Internal$Model$Attr(
-									$elm$html$Html$Attributes$alt(description))
-								]),
-							imageAttributes),
-						$mdgriffith$elm_ui$Internal$Model$Unkeyed(_List_Nil))
-					])));
-	});
 var $mdgriffith$elm_ui$Internal$Model$MoveY = function (a) {
 	return {$: 'MoveY', a: a};
 };
@@ -12349,8 +12514,6 @@ var $mdgriffith$elm_ui$Element$moveRight = function (x) {
 		$mdgriffith$elm_ui$Internal$Flag$moveX,
 		$mdgriffith$elm_ui$Internal$Model$MoveX(x));
 };
-var $mdgriffith$elm_ui$Internal$Model$Empty = {$: 'Empty'};
-var $mdgriffith$elm_ui$Element$none = $mdgriffith$elm_ui$Internal$Model$Empty;
 var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
 	return {$: 'Px', a: a};
 };
@@ -12412,39 +12575,30 @@ var $mdgriffith$elm_ui$Element$Border$widthEach = function (_v0) {
 };
 var $author$project$GameView$gridTile = F2(
 	function (edges, tile) {
-		var innerOffset = function () {
-			var _v1 = tile.offset;
-			var x = _v1.a;
-			var y = _v1.b;
-			return _List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$moveDown(y),
-					$mdgriffith$elm_ui$Element$moveRight(x)
-				]);
-		}();
-		var inner = function () {
-			var _v0 = tile.contents;
-			switch (_v0.$) {
-				case 'Text':
-					var ch = _v0.a;
-					return $mdgriffith$elm_ui$Element$text(
-						$elm$core$String$fromChar(ch));
-				case 'Image':
-					var src = _v0.a;
-					return A2(
-						$mdgriffith$elm_ui$Element$image,
-						_List_fromArray(
-							[
-								$mdgriffith$elm_ui$Element$width(
-								$mdgriffith$elm_ui$Element$px($author$project$GameView$tileSize - 10)),
-								$mdgriffith$elm_ui$Element$height(
-								$mdgriffith$elm_ui$Element$px($author$project$GameView$tileSize - 10))
-							]),
-						{description: 'Image Asset', src: src});
-				default:
-					return $mdgriffith$elm_ui$Element$none;
-			}
-		}();
+		var letterContent = $elm$core$List$head(
+			A2(
+				$elm$core$List$filter,
+				function (_v8) {
+					var c = _v8.a;
+					if (c.$ === 'Text') {
+						return true;
+					} else {
+						return false;
+					}
+				},
+				tile));
+		var imageContent = $elm$core$List$head(
+			A2(
+				$elm$core$List$filter,
+				function (_v6) {
+					var c = _v6.a;
+					if (c.$ === 'Image') {
+						return true;
+					} else {
+						return false;
+					}
+				},
+				tile));
 		var border = function (isEdge) {
 			return isEdge ? 2 : 1;
 		};
@@ -12454,22 +12608,59 @@ var $author$project$GameView$gridTile = F2(
 			right: border(edges.right),
 			top: border(edges.top)
 		};
+		var background = function () {
+			if ((imageContent.$ === 'Just') && (imageContent.a.a.$ === 'Image')) {
+				var _v5 = imageContent.a;
+				var src = _v5.a.a;
+				return _List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$Background$image(src)
+					]);
+			} else {
+				return _List_Nil;
+			}
+		}();
+		var _v0 = function () {
+			if ((letterContent.$ === 'Just') && (letterContent.a.a.$ === 'Text')) {
+				var _v3 = letterContent.a;
+				var ch = _v3.a.a;
+				var os = _v3.b;
+				return _Utils_Tuple2(
+					$mdgriffith$elm_ui$Element$text(
+						$elm$core$String$fromChar(ch)),
+					os);
+			} else {
+				return _Utils_Tuple2(
+					$mdgriffith$elm_ui$Element$text(''),
+					_Utils_Tuple2(0, 0));
+			}
+		}();
+		var letter = _v0.a;
+		var _v1 = _v0.b;
+		var offX = _v1.a;
+		var offY = _v1.b;
+		var inner = A2($mdgriffith$elm_ui$Element$el, _List_Nil, letter);
 		return A2(
 			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$Border$widthEach(borders),
-					$mdgriffith$elm_ui$Element$width(
-					$mdgriffith$elm_ui$Element$px(50)),
-					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(50))
-				]),
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$Border$widthEach(borders),
+						$mdgriffith$elm_ui$Element$width(
+						$mdgriffith$elm_ui$Element$px(50)),
+						$mdgriffith$elm_ui$Element$height(
+						$mdgriffith$elm_ui$Element$px(50))
+					]),
+				background),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
-				_Utils_ap(
-					_List_fromArray(
-						[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY]),
-					innerOffset),
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$centerX,
+						$mdgriffith$elm_ui$Element$centerY,
+						$mdgriffith$elm_ui$Element$moveRight(offX),
+						$mdgriffith$elm_ui$Element$moveDown(offY)
+					]),
 				inner));
 	});
 var $mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
@@ -12492,8 +12683,9 @@ var $mdgriffith$elm_ui$Element$row = F2(
 						attrs))),
 			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
-var $author$project$GameView$gameview = function (state) {
-	var tiles = $author$project$GameView$gameTiles(state);
+var $author$project$GameView$gameview = function (manager) {
+	var tiles = $author$project$GameView$gameTiles(manager);
+	var state = manager.gamestate;
 	var getEdges = function (coord) {
 		return {
 			bottom: _Utils_eq(coord.row, state.grid.rows - 1),
